@@ -8,9 +8,9 @@ from string import Template
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-FROM_EMAIL = "vecheka07@gmail.com"
-TO_EMAIL = "cvecheka07@gmail.com"
-PASSWORD = "ahnika071221"
+FROM_EMAIL = "some@email.com"
+TO_EMAIL = "some@email.com"
+PASSWORD = "****"
 
 headers = {
     "User-Agent": "Web crawler. Contact me at cvecheka07@gmail.com"
