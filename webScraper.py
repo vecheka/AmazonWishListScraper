@@ -11,6 +11,7 @@ from email.mime.text import MIMEText
 FROM_EMAIL = "some@email.com"
 TO_EMAIL = "some@email.com"
 PASSWORD = "****"
+UNKNOWN = "Unknown"
 
 headers = {
     "User-Agent": "Web crawler. Contact me at cvecheka07@gmail.com"
@@ -21,12 +22,13 @@ LINK_HEADER = "https://www.amazon.com"
 FILE_NAME = "items_info.csv"
 
 
+
 ## Fetch data from the targeted url
 def fetchData():
     try:
         # targeted url
-        wiki = "https://www.amazon.com/hz/wishlist/ls/10DP6ESCAUH9Q/ref=nav_wishlist_lists_2?_encoding=UTF8&type=wishlist"
-
+##        wiki = "https://www.amazon.com/hz/wishlist/ls/10DP6ESCAUH9Q/ref=nav_wishlist_lists_2?_encoding=UTF8&type=wishlist"
+        wiki = "https://www.amazon.com/hz/wishlist/ls/3NZFUWEQXRL84/?ref_=lol_ov_le#"
         # get permission from the page
         page = requests.get(wiki, headers = headers, timeout = 5)
 
@@ -38,7 +40,6 @@ def fetchData():
         for prices in soup.find_all("span", "a-price-whole"):
             item_prices.append(prices.text.strip().replace(".", "").replace(",", ""))
 
-
         # get contents from specific class or id
         item_contents = soup.select(".a-size-base > a")
         item_info = [["Name", "Price($)", "Link"]]
@@ -47,7 +48,11 @@ def fetchData():
             for item in item_contents:
                 content = item.contents
                 item_name = content[0].split(",")[0]
-                item_info.append([item_name, item_prices[index], LINK_HEADER + item["href"]])
+                if (index >= len(item_prices)) :
+                     item_info.append([item_name, UNKNOWN, LINK_HEADER + item["href"]])
+                else:
+                     item_info.append([item_name, item_prices[index], LINK_HEADER + item["href"]])
+               
                 index += 1
             return item_info
         else:
@@ -95,11 +100,16 @@ def comparePrice():
 
     hasDropped = False
     for i in range(1, len(originalItems_info)):
-        price1 = int(originalItems_info[i][1])
-        price2 = int(updatedItems_info[i][1])
-        if (price1 > price2):
-            notify(originalItems_info[i], updatedItems_info[i])
-            hasDropped = True
+        price1 = originalItems_info[i][1]
+        price2 = updatedItems_info[i][1]
+        if (price1 != UNKNOWN and price2 != UNKNOWN):
+            price1 = int(price1)
+            price2 = int(price2)
+            if (price1 > price2):
+                notify(originalItems_info[i], updatedItems_info[i])
+                hasDropped = True
+        else:
+            print("Unknown Price. Please visit item's link to find out more. \nLink: " + originalItems_info[i][2])
 
 
     if hasDropped:
@@ -139,11 +149,11 @@ def main():
         writeToFile(item_info)
     while (True):
         comparePrice()
+        print("Web Crawler's going to sleep for a day")
         time.sleep(3600 * 24)
+        print("Web Crawler's awake!")
 
     print("Done!")
 
 main()
-
-
 
